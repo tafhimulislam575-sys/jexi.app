@@ -1,11 +1,19 @@
 import express from "express";
-import cors from "cors";
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-app.use(cors());
 app.use(express.json());
+
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+  next();
+});
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
@@ -14,11 +22,12 @@ app.get("/health", (req, res) => {
 app.post("/chat", (req, res) => {
   const { messages } = req.body || {};
   const text = messages?.[messages.length - 1]?.content || "hello";
+
   res.json({
     response: `Jexi: ${text}`
   });
 });
 
-app.listen(PORT, "127.0.0.1", () => {
-  console.log("Jexi running on http://127.0.0.1:3000");
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Jexi running on port ${PORT}`);
 });
