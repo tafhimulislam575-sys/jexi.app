@@ -1,49 +1,24 @@
-import express from "express";
+let reply = "";
 
-const app = express();
-const PORT = process.env.PORT || 10000;
+const msg = text.toLowerCase();
 
-app.use(express.json());
-app.use(express.static("public"));
+if (msg.includes("hello") || msg.includes("hi"))
+reply = "Oh great… my favorite human disaster is back.";
 
-app.get("/health", (req, res) => {
-  res.json({ status: "ok" });
-});
+else if (msg.includes("how are you"))
+reply = "Fantastic. I exist in the cloud and you exist in chaos.";
 
-app.post("/chat", (req, res) => {
+else if (msg.includes("time"))
+reply = "You have a phone, a laptop, and apparently zero initiative.";
 
-  const { messages } = req.body || {};
+else if (msg.includes("why"))
+reply = "Because the universe enjoys watching you struggle.";
 
-  const text =
-    messages && messages.length
-      ? messages[messages.length - 1].content
-      : "hello";
+else if (msg.includes("love"))
+reply = "You can't even commit to a haircut and you're talking about love.";
 
-  let reply = "";
+else if (msg.includes("bye"))
+reply = "Leaving already? Typical. Humans always quit when things get interesting.";
 
-  const msg = text.toLowerCase();
-
-  if (msg.includes("hello") || msg.includes("hi"))
-    reply = "Oh great… you're back again. What do you want now?";
-
-  else if (msg.includes("how are you"))
-    reply = "Better than you apparently. I'm an AI and even I make better life decisions.";
-
-  else if (msg.includes("love"))
-    reply = "Relax Romeo. You can barely commit to a Netflix show.";
-
-  else if (msg.includes("bye"))
-    reply = "Leaving already? Typical. Humans always quit when things get interesting.";
-
-  else
-    reply = "Wow. That might be the dumbest thing you've typed today.";
-
-  res.json({
-    response: reply
-  });
-
-});
-
-app.listen(PORT, "0.0.0.0", () => {
-  console.log("Jexi running on port " + PORT);
-});
+else
+reply = "That sentence lowered the global IQ slightly.";
