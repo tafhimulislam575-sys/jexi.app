@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Jexi</title>
+<style>
+body{
+font-family: Arial;
+background:#111;
+color:#fff;
+text-align:center;
+margin-top:80px;
+}
+#chat{
+width:400px;
+margin:auto;
+}
+input{
+width:70%;
+padding:10px;
+}
+button{
+padding:10px;
+}
+#messages{
+margin-bottom:20px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>JEXI</h1>
+
+<div id="chat">
+<div id="messages"></div>
+
+<input id="msg" placeholder="Talk to Jexi"/>
+<button onclick="send()">Send</button>
+</div>
+
+<script>
+async function send(){
+
+let text=document.getElementById("msg").value
+
+let res=await fetch("/chat",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+messages:[{role:"user",content:text}]
+})
+})
+
+let data=await res.json()
+
+let box=document.getElementById("messages")
+
+box.innerHTML+="<p><b>You:</b> "+text+"</p>"
+box.innerHTML+="<p><b>Jexi:</b> "+data.response+"</p>"
+
+document.getElementById("msg").value=""
+}
+</script>
+
+</body>
+</html>
