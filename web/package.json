@@ -1,0 +1,12 @@
+{
+  "name": "jexi-web",
+  "version": "1.0.0",
+  "description": "Jexi AI chatbot web version",
+  "scripts": {
+    "dev": "npx http-server -p 3001 -c-1",
+    "start": "npx http-server -p 8080"
+  },
+  "keywords": ["jexi", "chatbot", "ai"],
+  "author": "",
+  "license": "MIT"
+}
