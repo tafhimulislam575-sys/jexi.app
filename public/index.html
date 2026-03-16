@@ -1,146 +1,70 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Jexi</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #111;
-      color: #fff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-    }
+<script>
+  const messagesBox = document.getElementById("messages");
+  const input = document.getElementById("msg");
+  const sendBtn = document.getElementById("sendBtn");
 
-    .app {
-      width: 100%;
-      max-width: 700px;
-      padding: 20px;
-    }
+  let messages = JSON.parse(localStorage.getItem("jexi_messages") || "[]");
 
-    h1 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
+  function saveMessages() {
+    localStorage.setItem("jexi_messages", JSON.stringify(messages));
+  }
 
-    #messages {
-      background: #1b1b1b;
-      border: 1px solid #333;
-      border-radius: 12px;
-      padding: 16px;
-      min-height: 350px;
-      max-height: 500px;
-      overflow-y: auto;
-      margin-bottom: 16px;
-    }
+  function addMessage(role, text) {
+    const div = document.createElement("div");
+    div.className = "msg " + role;
+    div.innerHTML = `<b>${role === "user" ? "You" : "Jexi"}:</b> ${text}`;
+    messagesBox.appendChild(div);
+    messagesBox.scrollTop = messagesBox.scrollHeight;
+  }
 
-    .msg {
-      margin: 10px 0;
-      line-height: 1.4;
-    }
-
-    .user b {
-      color: #7cc7ff;
-    }
-
-    .jexi b {
-      color: #ff7aa2;
-    }
-
-    .row {
-      display: flex;
-      gap: 10px;
-    }
-
-    input {
-      flex: 1;
-      padding: 12px;
-      border-radius: 10px;
-      border: 1px solid #333;
-      background: #222;
-      color: white;
-      font-size: 16px;
-    }
-
-    button {
-      padding: 12px 18px;
-      border: none;
-      border-radius: 10px;
-      background: #ff4d6d;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      opacity: 0.9;
-    }
-  </style>
-</head>
-<body>
-  <div class="app">
-    <h1>JEXI</h1>
-    <div id="messages"></div>
-
-    <div class="row">
-      <input id="msg" type="text" placeholder="Talk to Jexi" />
-      <button id="sendBtn">Send</button>
-    </div>
-  </div>
-
-  <script>
-    const messagesBox = document.getElementById("messages");
-    const input = document.getElementById("msg");
-    const sendBtn = document.getElementById("sendBtn");
-
-    let messages = [];
-
-    function addMessage(role, text) {
-      const div = document.createElement("div");
-      div.className = "msg " + role;
-      div.innerHTML = `<b>${role === "user" ? "You" : "Jexi"}:</b> ${text}`;
-      messagesBox.appendChild(div);
-      messagesBox.scrollTop = messagesBox.scrollHeight;
-    }
-
-    async function sendMessage() {
-      const text = input.value.trim();
-      if (!text) return;
-
-      addMessage("user", text);
-      messages.push({ role: "user", content: text });
-      input.value = "";
-
-      try {
-        const res = await fetch("/chat", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ messages })
-        });
-
-        const data = await res.json();
-        const reply = data.response || "Jexi glitched. Classic.";
-
-        addMessage("jexi", reply);
-        messages.push({ role: "assistant", content: reply });
-      } catch (err) {
-        addMessage("jexi", "Network error. You probably broke something.");
-      }
-    }
-
-    sendBtn.addEventListener("click", sendMessage);
-
-    input.addEventListener("keydown", function (e) {
-      if (e.key === "Enter") {
-        sendMessage();
-      }
+  function renderMessages() {
+    messagesBox.innerHTML = "";
+    messages.forEach((m) => {
+      addMessage(m.role === "assistant" ? "jexi" : "user", m.content);
     });
-  </script>
-</body>
-</html>
+  }
+
+  async function sendMessage() {
+    const text = input.value.trim();
+    if (!text) return;
+
+    const userMsg = { role: "user", content: text };
+    messages.push(userMsg);
+    saveMessages();
+    addMessage("user", text);
+    input.value = "";
+
+    try {
+      const res = await fetch("/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ messages })
+      });
+
+      const data = await res.json();
+      const reply = data.response || "Jexi glitched. Classic.";
+
+      const aiMsg = { role: "assistant", content: reply };
+      messages.push(aiMsg);
+      saveMessages();
+      addMessage("jexi", reply);
+    } catch (err) {
+      const failMsg = { role: "assistant", content: "Network error. You probably broke something." };
+      messages.push(failMsg);
+      saveMessages();
+      addMessage("jexi", failMsg.content);
+    }
+  }
+
+  sendBtn.addEventListener("click", sendMessage);
+
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      sendMessage();
+    }
+  });
+
+  renderMessages();
+</script>
