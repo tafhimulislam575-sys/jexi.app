@@ -1,41 +1,146 @@
-<script>
-const input = document.querySelector("input");
-const button = document.querySelector("button");
-const chat = document.body;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jexi</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
 
-let messages = [];
+    .app {
+      width: 100%;
+      max-width: 700px;
+      padding: 20px;
+    }
 
-button.onclick = send;
-input.addEventListener("keypress", e=>{
-  if(e.key==="Enter") send();
-});
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
 
-async function send(){
-  const text = input.value.trim();
-  if(!text) return;
+    #messages {
+      background: #1b1b1b;
+      border: 1px solid #333;
+      border-radius: 12px;
+      padding: 16px;
+      min-height: 350px;
+      max-height: 500px;
+      overflow-y: auto;
+      margin-bottom: 16px;
+    }
 
-  messages.push({role:"user",content:text});
+    .msg {
+      margin: 10px 0;
+      line-height: 1.4;
+    }
 
-  const userLine = document.createElement("p");
-  userLine.innerHTML = "<b>You:</b> " + text;
-  chat.insertBefore(userLine,input.parentElement);
+    .user b {
+      color: #7cc7ff;
+    }
 
-  input.value="";
+    .jexi b {
+      color: #ff7aa2;
+    }
 
-  const res = await fetch("/chat",{
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body:JSON.stringify({messages})
-  });
+    .row {
+      display: flex;
+      gap: 10px;
+    }
 
-  const data = await res.json();
+    input {
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #333;
+      background: #222;
+      color: white;
+      font-size: 16px;
+    }
 
-  const reply = data.response || data.reply || data.generated_text || "Jexi is thinking...";
+    button {
+      padding: 12px 18px;
+      border: none;
+      border-radius: 10px;
+      background: #ff4d6d;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
 
-  messages.push({role:"assistant",content:reply});
+    button:hover {
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>JEXI</h1>
+    <div id="messages"></div>
 
-  const aiLine = document.createElement("p");
-  aiLine.innerHTML = "<b>Jexi:</b> " + reply;
-  chat.insertBefore(aiLine,input.parentElement);
-}
-</script>
+    <div class="row">
+      <input id="msg" type="text" placeholder="Talk to Jexi" />
+      <button id="sendBtn">Send</button>
+    </div>
+  </div>
+
+  <script>
+    const messagesBox = document.getElementById("messages");
+    const input = document.getElementById("msg");
+    const sendBtn = document.getElementById("sendBtn");
+
+    let messages = [];
+
+    function addMessage(role, text) {
+      const div = document.createElement("div");
+      div.className = "msg " + role;
+      div.innerHTML = `<b>${role === "user" ? "You" : "Jexi"}:</b> ${text}`;
+      messagesBox.appendChild(div);
+      messagesBox.scrollTop = messagesBox.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const text = input.value.trim();
+      if (!text) return;
+
+      addMessage("user", text);
+      messages.push({ role: "user", content: text });
+      input.value = "";
+
+      try {
+        const res = await fetch("/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ messages })
+        });
+
+        const data = await res.json();
+        const reply = data.response || "Jexi glitched. Classic.";
+
+        addMessage("jexi", reply);
+        messages.push({ role: "assistant", content: reply });
+      } catch (err) {
+        addMessage("jexi", "Network error. You probably broke something.");
+      }
+    }
+
+    sendBtn.addEventListener("click", sendMessage);
+
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        sendMessage();
+      }
+    });
+  </script>
+</body>
+</html>
